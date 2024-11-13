@@ -1,0 +1,16 @@
+{
+    "name": "learndash-quiz-question-associator",
+    "description": "A WordPress plugin to bulk assign questions to quizzes",
+    "type": "wordpress-plugin",
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Vlad Tudorie",
+            "email": "vlad@serenichron.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.2",
+        "composer/installers": "~1.0"
+    }
+}
