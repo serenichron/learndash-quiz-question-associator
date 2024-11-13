@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LearnDash Quiz Question Associator
  * Description: Associate existing LearnDash questions with quizzes via CSV upload
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: Vlad Tudorie
  * Author URI: https://serenichron.com
  */
@@ -11,7 +11,59 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// [Previous menu code remains the same]
+// Add menu item under LearnDash menu
+function ldqa_add_admin_menu() {
+    add_submenu_page(
+        'learndash-lms',          // Parent slug (LearnDash LMS menu)
+        'Quiz Question Associator', // Page title
+        'Quiz Question Associator', // Menu title
+        'manage_options',          // Capability required
+        'ldqa-associator',         // Menu slug
+        'ldqa_admin_page'          // Function to display the page
+    );
+}
+add_action('admin_menu', 'ldqa_add_admin_menu');
+
+// Create the admin page
+function ldqa_admin_page() {
+    // Handle form submission
+    if (isset($_POST['ldqa_submit']) && check_admin_referer('ldqa_upload_csv')) {
+        if (!empty($_FILES['ldqa_csv_file']['tmp_name'])) {
+            ldqa_process_csv($_FILES['ldqa_csv_file']['tmp_name']);
+        }
+    }
+    
+    // Admin page HTML
+    ?>
+    <div class="wrap">
+        <h1>LearnDash Quiz Question Associator</h1>
+        
+        <div class="card">
+            <h2>Upload CSV File</h2>
+            <p>Upload a CSV file with each row containing a Quiz ID and its corresponding Question ID.</p>
+            <p>Example CSV format:</p>
+            <pre>1306846,1306847
+1306849,1306850
+1307452,1307453</pre>
+            <p><strong>Format Details:</strong></p>
+            <ul style="list-style-type: disc; margin-left: 20px;">
+                <li>Each row should contain: Quiz ID, Question ID</li>
+                <li>The IDs should be existing Quiz and Question IDs in your LearnDash system</li>
+                <li>First column: Quiz IDs</li>
+                <li>Second column: Question IDs</li>
+            </ul>
+            
+            <form method="post" enctype="multipart/form-data">
+                <?php wp_nonce_field('ldqa_upload_csv'); ?>
+                <input type="file" name="ldqa_csv_file" accept=".csv" required>
+                <p class="submit">
+                    <input type="submit" name="ldqa_submit" class="button button-primary" value="Process CSV">
+                </p>
+            </form>
+        </div>
+    </div>
+    <?php
+}
 
 function ldqa_debug_log($message, $data = null) {
     if (WP_DEBUG) {
