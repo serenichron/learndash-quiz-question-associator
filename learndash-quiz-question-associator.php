@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LearnDash Quiz Question Associator
  * Description: Associate existing LearnDash questions with quizzes via CSV upload
- * Version: 1.0
+ * Version: 1.0.1
  * Author: Vlad Tudorie
  */
 

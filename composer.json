@@ -1,5 +1,5 @@
 {
-    "name": "learndash-quiz-question-associator",
+    "name": "serenichron/learndash-quiz-question-associator",
     "description": "A WordPress plugin to bulk assign questions to quizzes",
     "type": "wordpress-plugin",
     "license": "GPL-3.0-or-later",
