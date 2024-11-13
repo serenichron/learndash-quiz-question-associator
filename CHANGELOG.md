@@ -4,7 +4,31 @@ All notable changes to the LearnDash Quiz Question Associator plugin will be doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.4] - 2024-11-13
+## [1.0.5] - 2024-11-13
+### Added
+- Proper class-based plugin architecture
+- WP_Filesystem integration for secure file operations
+- Caching layer for database queries
+- Comprehensive error handling and validation
+- Internationalization support
+- Security improvements for file uploads
+
+### Changed
+- Refactored into separate class files for better organization
+- Improved error messages and user feedback
+- Updated to use WordPress coding standards
+- Enhanced CSV processing with better error checking
+- Switched from direct file operations to WP_Filesystem
+- Improved database operations with caching
+
+### Fixed
+- Security issues with unescaped output
+- Direct database queries without caching
+- Unsanitized file inputs
+- File system operation security
+- WordPress coding standards violations
+
+## [1.0.3] - 2024-11-13
 ### Added
 - Comprehensive debug logging system
 - Debug information display in UI when WP_DEBUG is enabled
