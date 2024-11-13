@@ -26,24 +26,40 @@ This plugin adds a new tool to your LearnDash LMS installation that allows you t
 ## Usage
 
 1. Navigate to LearnDash LMS > Quiz Question Associator in your WordPress admin
-2. Prepare a CSV file with:
-   - First row: Quiz IDs
-   - Second row: Question IDs to be associated with the corresponding quizzes
+2. Prepare a CSV file with one Quiz ID and one Question ID per row:
+   - First column: Quiz ID
+   - Second column: Question ID to be associated with the quiz
 3. Upload your CSV file
 4. Click "Process CSV"
 5. Review the results
 
 ### CSV Format Example
 ```
-1301894,1301895,1301896
-1306847,1306848,1306849
+1306846,1306847
+1306849,1306850
+1307452,1307453
 ```
+
+Each row represents one quiz-question association.
+
+### Debug Mode
+
+When WP_DEBUG is enabled in wp-config.php, the plugin provides detailed information about:
+- CSV processing
+- Post verification
+- Metadata updates
+- Database operations
+
+Debug information appears in:
+- WordPress debug log file
+- UI (when WP_DEBUG is enabled)
 
 ## Requirements
 
 - WordPress 5.0 or higher
 - LearnDash LMS 3.0 or higher
 - PHP 7.2 or higher
+- WP_DEBUG enabled (optional, for detailed logging)
 
 ## Support
 
