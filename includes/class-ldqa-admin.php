@@ -16,8 +16,8 @@ class LDQA_Admin {
 
         add_submenu_page(
             'learndash-lms',
-            esc_html__('Quiz Question Associator', 'ldqa'),
-            esc_html__('Quiz Question Associator', 'ldqa'),
+            __('Quiz Question Associator', LDQA_TEXT_DOMAIN),
+            __('Quiz Question Associator', LDQA_TEXT_DOMAIN),
             'edit_courses',
             'ldqa-associator',
             array($this, 'render_admin_page')
@@ -30,7 +30,7 @@ class LDQA_Admin {
 
     public function render_admin_page() {
         if (!current_user_can('edit_courses')) {
-            wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'ldqa'));
+            wp_die(__('You do not have sufficient permissions to access this page.', LDQA_TEXT_DOMAIN));
         }
 
         // Process form submission
@@ -45,33 +45,92 @@ class LDQA_Admin {
             return;
         }
 
-        if (!check_admin_referer('ldqa_upload_csv') || !wp_verify_nonce($_POST['_wpnonce'], 'ldqa_upload_csv')) {
-            wp_die(esc_html__('Security check failed.', 'ldqa'));
+        $nonce = isset($_POST['_wpnonce']) ? wp_unslash($_POST['_wpnonce']) : '';
+        if (!wp_verify_nonce($nonce, 'ldqa_upload_csv')) {
+            add_settings_error(
+                'ldqa_messages',
+                'ldqa_error',
+                __('Security check failed.', LDQA_TEXT_DOMAIN),
+                'error'
+            );
+            return;
+        }
+
+        // Validate and sanitize file input
+        $file = isset($_FILES['ldqa_csv_file']) ? $_FILES['ldqa_csv_file'] : null;
+        if (!$file) {
+            add_settings_error(
+                'ldqa_messages',
+                'ldqa_error',
+                __('No file uploaded.', LDQA_TEXT_DOMAIN),
+                'error'
+            );
+            return;
         }
 
         // Handle file upload with WP_Filesystem
         $processor = new LDQA_Processor();
         $filesystem = new LDQA_Filesystem();
         
-        $file = $filesystem->handle_upload($_FILES['ldqa_csv_file']);
-        if (is_wp_error($file)) {
+        $uploaded_file = $filesystem->handle_upload($file);
+        if (is_wp_error($uploaded_file)) {
             add_settings_error(
-                'ldqa_messages', 
-                'ldqa_error', 
-                $file->get_error_message(), 
+                'ldqa_messages',
+                'ldqa_error',
+                $uploaded_file->get_error_message(),
                 'error'
             );
             return;
         }
 
-        $result = $processor->process_file($file);
-        if (is_wp_error($result)) {
+        $results = $processor->process_file($uploaded_file);
+        
+        if (is_wp_error($results)) {
             add_settings_error(
-                'ldqa_messages', 
-                'ldqa_error', 
-                $result->get_error_message(), 
+                'ldqa_messages',
+                'ldqa_error',
+                $results->get_error_message(),
                 'error'
             );
+            return;
         }
+
+        // Handle successful and failed associations
+        if (!empty($results['success'])) {
+            add_settings_error(
+                'ldqa_messages',
+                'ldqa_success',
+                sprintf(
+                    /* translators: %d: number of successful associations */
+                    __('Successfully processed %d associations.', LDQA_TEXT_DOMAIN),
+                    count($results['success'])
+                ),
+                'success'
+            );
+        }
+
+        if (!empty($results['errors'])) {
+            foreach ($results['errors'] as $error) {
+                add_settings_error(
+                    'ldqa_messages',
+                    'ldqa_error',
+                    $error,
+                    'error'
+                );
+            }
+        }
+
+        // If no successes and no errors, show a message
+        if (empty($results['success']) && empty($results['errors'])) {
+            add_settings_error(
+                'ldqa_messages',
+                'ldqa_warning',
+                __('No valid associations were found in the CSV file.', LDQA_TEXT_DOMAIN),
+                'warning'
+            );
+        }
+
+        // Clean up the uploaded file
+        $filesystem->delete($uploaded_file);
     }
 }

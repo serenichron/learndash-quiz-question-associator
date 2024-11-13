@@ -4,6 +4,34 @@ All notable changes to the LearnDash Quiz Question Associator plugin will be doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2024-11-13
+### Fixed
+- Missing feedback when processing CSV files with invalid IDs
+- Text domain consistency across all files (changed to 'learndash-quiz-question-associator')
+- File handling security with WP_Filesystem methods
+- Input validation and sanitization
+- Error messaging and user feedback system
+- WordPress coding standards compliance
+- Direct database queries now use caching
+- Empty or malformed CSV row handling
+
+### Added
+- Detailed success and error reporting for each processed row
+- Warning message when no valid associations are found
+- Better error handling for non-existent quizzes and questions
+- LearnDash dependency checking
+- Row-by-row validation messages
+- Caching system for repeated database queries
+- Proper cleanup processes for temporary files
+
+### Changed
+- Updated text domain to match plugin slug
+- Improved error message display system
+- Enhanced file cleanup process
+- More specific error messages for each type of failure
+- Better handling of malformed CSV files
+- Improved validation feedback for missing/invalid IDs
+
 ## [1.0.5] - 2024-11-13
 ### Added
 - Proper class-based plugin architecture

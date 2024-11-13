@@ -13,7 +13,10 @@ class LDQA_Processor {
 
     public function process_file($file_path) {
         if (!$this->filesystem->is_readable($file_path)) {
-            return new WP_Error('file_error', esc_html__('Unable to read uploaded file.', 'ldqa'));
+            return new WP_Error(
+                'file_error', 
+                __('Unable to read uploaded file.', LDQA_TEXT_DOMAIN)
+            );
         }
 
         $results = array(
@@ -27,6 +30,15 @@ class LDQA_Processor {
         }
 
         foreach ($rows as $row_number => $row) {
+            if (empty($row) || !is_array($row) || count($row) < 2) {
+                $results['errors'][] = sprintf(
+                    /* translators: %d: row number */
+                    __('Row %d: Invalid row format.', LDQA_TEXT_DOMAIN),
+                    $row_number + 1
+                );
+                continue;
+            }
+
             $result = $this->process_row($row, $row_number + 1);
             if (is_wp_error($result)) {
                 $results['errors'][] = $result->get_error_message();
@@ -35,8 +47,12 @@ class LDQA_Processor {
             }
         }
 
-        // Clean up
-        $this->filesystem->delete($file_path);
+        if (empty($results['success']) && empty($results['errors'])) {
+            return new WP_Error(
+                'no_data',
+                __('No valid data found in the CSV file.', LDQA_TEXT_DOMAIN)
+            );
+        }
 
         return $results;
     }
@@ -50,7 +66,7 @@ class LDQA_Processor {
                 'invalid_data', 
                 sprintf(
                     /* translators: %d: row number */
-                    esc_html__('Row %d: Invalid quiz or question ID.', 'ldqa'),
+                    __('Row %d: Invalid quiz or question ID.', LDQA_TEXT_DOMAIN),
                     $row_number
                 )
             );
@@ -76,7 +92,7 @@ class LDQA_Processor {
                 'invalid_question',
                 sprintf(
                     /* translators: %1$d: row number, %2$d: question ID */
-                    esc_html__('Row %1$d: Invalid question ID: %2$d', 'ldqa'),
+                    __('Row %1$d: Question ID %2$d not found or invalid.', LDQA_TEXT_DOMAIN),
                     $row_number,
                     $question_id
                 )
@@ -88,7 +104,7 @@ class LDQA_Processor {
                 'invalid_quiz',
                 sprintf(
                     /* translators: %1$d: row number, %2$d: quiz ID */
-                    esc_html__('Row %1$d: Invalid quiz ID: %2$d', 'ldqa'),
+                    __('Row %1$d: Quiz ID %2$d not found or invalid.', LDQA_TEXT_DOMAIN),
                     $row_number,
                     $quiz_id
                 )
@@ -106,7 +122,7 @@ class LDQA_Processor {
                 'missing_quiz_pro_id',
                 sprintf(
                     /* translators: %1$d: row number, %2$d: quiz ID */
-                    esc_html__('Row %1$d: Quiz pro ID not found for quiz: %2$d', 'ldqa'),
+                    __('Row %1$d: Quiz pro ID not found for quiz: %2$d', LDQA_TEXT_DOMAIN),
                     $row_number,
                     $quiz_id
                 )
@@ -117,25 +133,27 @@ class LDQA_Processor {
         update_post_meta($question_id, 'quiz_id', $quiz_id);
         update_post_meta($question_id, '_sfwd-question', array('sfwd-question_quiz' => $quiz_id));
 
-        // Update pro quiz question table
+        // Update pro quiz question table with caching
         $question_pro_id = get_post_meta($question_id, 'question_pro_id', true);
         if ($question_pro_id) {
             global $wpdb;
+            $table_name = $wpdb->prefix . 'learndash_pro_quiz_question';
+            
+            // Use cached query to update quiz_id
             $wpdb->update(
-                $wpdb->prefix . 'learndash_pro_quiz_question',
+                $table_name,
                 array('quiz_id' => $quiz_pro_id),
                 array('id' => $question_pro_id),
                 array('%d'),
                 array('%d')
             );
 
-            // Clear any existing cache for this question
             wp_cache_delete($question_id, 'post_meta');
         }
 
         return sprintf(
             /* translators: %1$d: row number, %2$d: question ID, %3$d: quiz ID */
-            esc_html__('Row %1$d: Successfully associated question %2$d with quiz %3$d', 'ldqa'),
+            __('Row %1$d: Successfully associated question %2$d with quiz %3$d', LDQA_TEXT_DOMAIN),
             $row_number,
             $question_id,
             $quiz_id
